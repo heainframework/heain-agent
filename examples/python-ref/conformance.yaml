@@ -1,0 +1,23 @@
+# heain-conformance inputs for agent-ref (Python through heain-agent).
+manifest: heain-app.yaml
+# how to build and start the app -- any command; the suite sets the HEAIN_* variables
+build: [go, build, -o, heain-agent, ../../cmd/heain-agent]
+start: [./heain-agent]
+port: 19443
+endpoints:
+  - {method: POST, path: /v1/greet, body: {name: ann}, expect: 200}
+  - {method: GET, path: /v1/greet/bob, expect: 200}
+  - {method: POST, path: /v1/score, body: {text: "conformance-secret-score!!"}, expect: 200, secret: conformance-secret-score}
+  - {method: POST, path: /v1/id, body: {}, expect: 200}
+  - {method: POST, path: /v1/ballot, body: {}, expect: 200}
+  - {method: POST, path: /v1/relay, body: {name: relay}, expect: 200}
+jobs:
+  - {capability: ref.upper, payload: conformance-secret-job, expect_output: CONFORMANCE-SECRET-JOB, delivery: STAGED}
+  - {capability: ref.label, payload: conformance-secret-label, delivery: IMMEDIATE}
+p5:
+  propose: {method: POST, path: /v1/propose, body: {}}
+  status: {method: GET, path: "/v1/propose/{action_id}"}
+  type: ref.grant.extend
+p7:
+  broadcast: {method: POST, path: /v1/broadcast, body: {}}
+  sensitive: [customer_id]
