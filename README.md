@@ -107,3 +107,11 @@ Every call needs `Authorization: Bearer <token>`; a missing or wrong token gets 
 - `go test ./...` covers the configuration checks, the reasoning-record mapping, the token and the request binding.
 - `scripts/live_5d.sh` (run from heain-core, with `SDK_GOWORK` set) runs the Python example against a live core: admission, the token, mTLS endpoints, reasoning records, audit, relays, jobs, sealing, and both ways of stopping (19 checks).
 - The conformance suite, from heain-sdk: `heain-conformance --app examples/python-ref --core <heain-core>`.
+
+## The Python example as a container image (CineNexus Pro case study, step 2a, 2026-10-09)
+
+Docker is one way to package an app, never a requirement. `examples/python-ref` also ships:
+
+- `Dockerfile`: `python:3.12-slim-bookworm` with the app and heain-agent (built on the host with CGO off), the agent as the entrypoint; it starts `python3 app.py` as before.
+- `conformance.docker.yaml`: the same checks as `conformance.yaml`, the app run as that image. From heain-sdk: `heain-conformance run --app examples/python-ref --conf conformance.docker.yaml`.
+- **Running it by hand:** `docker run --rm --init --network host -e HEAIN_CORE_URL -e HEAIN_CORE_ID -e HEAIN_CA -e HEAIN_CHAIN -e HEAIN_MANIFEST -e HEAIN_INSTANCE -e HEAIN_STATE_DIR -e HEAIN_ENROLL_TOKEN -e HEAIN_ENDPOINT_BASE -e HEAIN_LISTEN -v <dir with those files>:<same path> heain-agent-ref:conformance` -- in the foreground (no `-d`), on the host network, so the agent reaches its node's core over loopback.
